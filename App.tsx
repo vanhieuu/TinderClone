@@ -1,11 +1,5 @@
 import 'react-native-gesture-handler';
-import {
-  Pressable,
-  SafeAreaView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import {Pressable, SafeAreaView, StyleSheet, View} from 'react-native';
 import React from 'react';
 import HomeScreen from './src/screens/HomeScreen';
 import Fontisto from 'react-native-vector-icons/Fontisto';
@@ -13,8 +7,11 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import MatchesScreen from './src/screens/MatchesScreen';
+import ProfileScreen from './src/screens/ProfileScreen';
 const color = '#b5b5b5';
-const activeColor = '#F76C6B';
+
+
+
 const App = () => {
   const [activeScreen, setActiveScreen] = React.useState<string>('HOME');
 
@@ -25,7 +22,6 @@ const App = () => {
           <Pressable
             onPress={() => {
               setActiveScreen('HOME');
-
             }}>
             <Fontisto
               name="tinder"
@@ -50,12 +46,20 @@ const App = () => {
               color={activeScreen === 'CHAT' ? '#F76C6B' : color}
             />
           </Pressable>
-          <Pressable>
-            <FontAwesome name="user" size={24} color={color} />
+          <Pressable
+            onPress={() => {
+              setActiveScreen('PROFILE');
+            }}>
+            <FontAwesome
+              name="user"
+              size={24}
+              color={activeScreen === 'PROFILE' ? '#F76C6B' : color}
+            />
           </Pressable>
         </View>
         {activeScreen === 'HOME' && <HomeScreen />}
         {activeScreen === 'CHAT' && <MatchesScreen />}
+        {activeScreen === 'PROFILE' && <ProfileScreen />}
       </View>
     </SafeAreaView>
   );
