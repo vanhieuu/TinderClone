@@ -1,9 +1,10 @@
 import {ImageBackground, StyleSheet, Text, View, Image} from 'react-native';
 import React from 'react';
 import {UserTypeProps} from '../../assets/data/users';
+import { User } from '../../models';
 
 interface CardProps extends UserTypeProps {
-  items: UserTypeProps;
+  items: User;
 }
 
 const TinderCard = ({items}: CardProps) => {
@@ -23,9 +24,9 @@ export default TinderCard;
 
 const styles = StyleSheet.create({
   card: {
-   width:'100%',
-   height:'75%',
-    backgroundColor: '#fefefe',
+   width:'90%',
+   height:'85%',
+    backgroundColor: 'blue',
     borderRadius: 10,
     shadowColor: '#000',
     shadowOffset: {
@@ -35,7 +36,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.36,
     shadowRadius: 6.68,
     elevation: 11,
-    flex:1
+    flex:1,
+    
   },
   image: {
     width: '100%',

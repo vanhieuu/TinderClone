@@ -1,5 +1,5 @@
 import {
-  Pressable,
+  Alert,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -10,14 +10,37 @@ import {
 import React from 'react';
 import {Auth} from 'aws-amplify';
 import {Picker} from '@react-native-picker/picker';
+import {User} from '../models';
 import {DataStore} from '@aws-amplify/datastore';
 
-import {User} from '../models';
 const ProfileScreen = () => {
   const [name, setName] = React.useState<string>('');
   const [bio, setBio] = React.useState<string>('');
   const [gender, setGender] = React.useState();
   const [lookingFor, setLookingFor] = React.useState();
+  const [user, setUser] = React.useState(null);
+
+  React.useEffect(() => {
+    const getCurrentUser = async () => {
+      const users = await Auth.currentAuthenticatedUser();
+      const dbUsers = await DataStore.query(
+        User,
+        u => {u.sub === users.attributes.sub},
+      );
+      
+      if (dbUsers.length < 0) {
+        return;
+      }
+      const dbUser = dbUsers[0];
+      setUser(dbUser);
+      setName(dbUser.name);
+      setBio(dbUser.bio);
+      setGender(dbUser.gender);
+      setLookingFor(dbUser.lookingFor);
+    };
+
+    getCurrentUser();
+  }, []);
 
   const isValid = () => {
     return name && bio && gender && lookingFor;
@@ -28,21 +51,30 @@ const ProfileScreen = () => {
       console.warn('Not valid');
       return;
     }
+    if (user) {
+      const updateUser = User.copyOf(user, update => {
+        (update.name = name),
+          (update.bio = bio),
+          (update.gender = gender),
+          (update.lookingFor = lookingFor);
+      });
 
-    // const user = await Auth.currentAuthenticatedUser();
+      await DataStore.save(updateUser);
+    } else {
+      const authUser = await Auth.currentAuthenticatedUser();
+      let newUser = new User({
+        sub: authUser.attributes.sub,
+        name: name,
+        image:
+          'https://notjustdev-dummy.s3.us-east-2.amazonaws.com/avatars/elon.png',
+        bio: bio,
+        gender: gender,
+        lookingFor: lookingFor,
+      });
 
-    const newUser = new User({
-      name: name,
-      image:
-        'https://notjustdev-dummy.s3.us-east-2.amazonaws.com/avatars/elon.png',
-      bio: bio,
-      gender: gender,
-      lookingFor: lookingFor,
-    });
-    console.log(newUser);
-
-    await DataStore.save(newUser);
-    
+      await DataStore.save(newUser);
+    }
+    Alert.alert('User saved successfully ');
   };
 
   return (
@@ -81,7 +113,7 @@ const ProfileScreen = () => {
           <Picker.Item label="Other" value={'OTHER'} />
         </Picker>
 
-        <TouchableOpacity onPress={save} style={styles.button}>
+        <TouchableOpacity onPress={() => save()} style={styles.button}>
           <Text>Save</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => Auth.signOut()} style={styles.button}>

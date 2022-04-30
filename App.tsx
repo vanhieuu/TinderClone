@@ -72,10 +72,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+
   },
   root: {
     flex: 1,
-    backgroundColor: '#ffff',
+    width:'100%',
   },
   topNavigation: {
     flexDirection: 'row',

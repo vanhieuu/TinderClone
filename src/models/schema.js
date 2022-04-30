@@ -21,7 +21,7 @@ export const schema = {
                     "association": {
                         "connectionType": "HAS_ONE",
                         "associatedWith": "id",
-                        "targetName": "matchUser1Id"
+                        "targetName": "User1ID"
                     }
                 },
                 "User2": {
@@ -35,8 +35,29 @@ export const schema = {
                     "association": {
                         "connectionType": "HAS_ONE",
                         "associatedWith": "id",
-                        "targetName": "matchUser2Id"
+                        "targetName": "User2ID"
                     }
+                },
+                "User1ID": {
+                    "name": "User1ID",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "User2ID": {
+                    "name": "User2ID",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "isMatch": {
+                    "name": "isMatch",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": true,
+                    "attributes": []
                 },
                 "createdAt": {
                     "name": "createdAt",
@@ -53,20 +74,6 @@ export const schema = {
                     "isRequired": false,
                     "attributes": [],
                     "isReadOnly": true
-                },
-                "matchUser1Id": {
-                    "name": "matchUser1Id",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "matchUser2Id": {
-                    "name": "matchUser2Id",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": false,
-                    "attributes": []
                 }
             },
             "syncable": true,
@@ -108,21 +115,21 @@ export const schema = {
                     "name": "name",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "image": {
                     "name": "image",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "bio": {
                     "name": "bio",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "gender": {
@@ -131,7 +138,7 @@ export const schema = {
                     "type": {
                         "enum": "Genders"
                     },
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "lookingFor": {
@@ -140,7 +147,14 @@ export const schema = {
                     "type": {
                         "enum": "Genders"
                     },
-                    "isRequired": false,
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "sub": {
+                    "name": "sub",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
                     "attributes": []
                 },
                 "createdAt": {
@@ -197,5 +211,5 @@ export const schema = {
         }
     },
     "nonModels": {},
-    "version": "0ae4119d55bcc75f22729c87ad816ea0"
+    "version": "a328d58c6f4c6e831b54a42424eced80"
 };
