@@ -10,25 +10,27 @@ import {
 import React from 'react';
 import {Auth} from 'aws-amplify';
 import {Picker} from '@react-native-picker/picker';
-import {User} from '../models';
+import {Genders, User} from '../models';
 import {DataStore} from '@aws-amplify/datastore';
 
 const ProfileScreen = () => {
   const [name, setName] = React.useState<string>('');
   const [bio, setBio] = React.useState<string>('');
-  const [gender, setGender] = React.useState();
-  const [lookingFor, setLookingFor] = React.useState();
+  const [gender, setGender] = React.useState<Genders | keyof typeof Genders>();
+  const [lookingFor, setLookingFor] = React.useState<
+    Genders | keyof typeof Genders
+  >();
   const [user, setUser] = React.useState(null);
 
   React.useEffect(() => {
     const getCurrentUser = async () => {
-      const users = await Auth.currentAuthenticatedUser();
-      const dbUsers = await DataStore.query(
-        User,
-        u => {u.sub === users.attributes.sub},
+      const authUser = await Auth.currentAuthenticatedUser();
+      const dbUsers = await DataStore.query(User, u =>
+        u.sub('eq', authUser.attributes.sub),
       );
-      
-      if (dbUsers.length < 0) {
+
+      if (!dbUsers || dbUsers.length < 0) {
+        console.warn('This is new User');
         return;
       }
       const dbUser = dbUsers[0];
@@ -77,6 +79,15 @@ const ProfileScreen = () => {
     Alert.alert('User saved successfully ');
   };
 
+
+  const signOut = async () =>{
+      await DataStore.clear();
+      Auth.signOut()
+  }
+
+
+
+
   return (
     <SafeAreaView style={styles.root}>
       <View style={styles.container}>
@@ -116,7 +127,7 @@ const ProfileScreen = () => {
         <TouchableOpacity onPress={() => save()} style={styles.button}>
           <Text>Save</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => Auth.signOut()} style={styles.button}>
+        <TouchableOpacity onPress={signOut} style={styles.button}>
           <Text>Sign Out</Text>
         </TouchableOpacity>
       </View>

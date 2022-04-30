@@ -1,19 +1,37 @@
 import {Image, SafeAreaView, StyleSheet, Text, View} from 'react-native';
 import React, {useState, useEffect} from 'react';
 
-import {Match} from '../models';
-import {DataStore} from 'aws-amplify';
+import {Match, User} from '../models';
+import {Auth, DataStore} from 'aws-amplify';
 
 const MatchesScreen = () => {
   const [match, setMatch] = useState<Match[]>([]);
+  const [me, setMe] = useState(null);
+  const getCurrentUser = async () => {
+    const users = await Auth.currentAuthenticatedUser();
+    const dbUsers = await DataStore.query(User, u => u.sub('eq',users.attributes.sub));
+
+    if (dbUsers.length < 0) {
+      return;
+    }
+
+    setMe(dbUsers[0]);
+  };
   useEffect(() => {
+    getCurrentUser();
+  }, []);
+  useEffect(() => {
+    if (!me) return;
     const fetchMatches = async () => {
-      const result = await DataStore.query(Match, m => m.isMatch('eq',true));
+      const result = await DataStore.query(Match, m =>
+        m
+          .isMatch('eq', true)
+          .or(m => m.User1ID('eq', me.id).User2ID('eq', me.id)),
+      );
       setMatch(result);
-     
     };
     fetchMatches();
-  }, []);
+  }, [me]);
 
   return (
     <SafeAreaView style={styles.root}>

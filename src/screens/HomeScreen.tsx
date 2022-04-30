@@ -15,11 +15,9 @@ const HomeScreen = () => {
   React.useEffect(() => {
     const getCurrentUser = async () => {
       const users = await Auth.currentAuthenticatedUser();
-      const dbUsers = await DataStore.query(User, u => {
-        u.sub === users.attributes.sub;
-      });
+      const dbUsers = await DataStore.query(User, u =>u.sub('eq',users.attributes.sub));
 
-      if (dbUsers.length < 0) {
+      if (  dbUsers.length === 0) {
         return;
       }
 
