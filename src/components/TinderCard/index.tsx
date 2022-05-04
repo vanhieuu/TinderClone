@@ -50,13 +50,13 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 30,
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#000',
     marginHorizontal: 10,
   },
   bio: {
     fontSize: 18,
     lineHeight: 25,
-    color: '#fff',
+    color: '#000',
     marginHorizontal: 10,
   },
   cardInner: {

@@ -3,11 +3,12 @@
   "serviceConfiguration": {
     "apiName": "TinderClone",
     "serviceName": "AppSync",
-    "gqlSchemaPath": "/tmp/amplify-71a29fbe-b019-457b-b77d-7d8df077be96/amplify/backend/api/TinderClone/schema.graphql",
+    "gqlSchemaPath": "D:\\WorkSpace\\PersonalProject\\TinderClone\\amplify\\backend\\api\\TinderClone\\schema.graphql",
     "defaultAuthType": {
       "mode": "API_KEY",
-      "keyDescription": "api key description",
-      "expirationTime": 30
+      "expirationTime": 30,
+      "apiKeyExpirationDate": "2022-06-01T11:13:57.479Z",
+      "keyDescription": "api key description"
     },
     "additionalAuthTypes": [
       {

@@ -1,5 +1,6 @@
 import {
   Alert,
+  Image,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -20,7 +21,7 @@ const ProfileScreen = () => {
   const [lookingFor, setLookingFor] = React.useState<
     Genders | keyof typeof Genders
   >();
-  const [user, setUser] = React.useState(null);
+  const [user, setUser] = React.useState<User>();
 
   React.useEffect(() => {
     const getCurrentUser = async () => {
@@ -29,7 +30,7 @@ const ProfileScreen = () => {
         u.sub('eq', authUser.attributes.sub),
       );
 
-      if (!dbUsers || dbUsers.length < 0) {
+      if (!dbUsers || dbUsers.length === 0) {
         console.warn('This is new User');
         return;
       }
@@ -123,6 +124,18 @@ const ProfileScreen = () => {
           <Picker.Item label="Female" value={'FEMALE'} />
           <Picker.Item label="Other" value={'OTHER'} />
         </Picker>
+        <View style={{
+          // flex:1,
+          justifyContent:'center',
+          alignItems:'center'
+        }}>
+          <Image
+            source={{uri:user?.image }}
+            style={{width:150,height:150}}
+            resizeMode='contain'
+          
+          />
+        </View>
 
         <TouchableOpacity onPress={() => save()} style={styles.button}>
           <Text>Save</Text>

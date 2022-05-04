@@ -1,4 +1,4 @@
-import {StyleSheet, View} from 'react-native';
+import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import React from 'react';
 import AnimatedStack from '../components/AnimatedStack';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -8,16 +8,18 @@ import {DataStore} from '@aws-amplify/datastore';
 import {Match, User} from '../models';
 import {Auth} from 'aws-amplify';
 
-const HomeScreen = () => {
+const HomeScreen = ({isUserLoading}: {isUserLoading: boolean}) => {
   const [users, setUsers] = React.useState<User[]>([]);
   const [currentUser, setCurrentUser] = React.useState<User>(null);
   const [authenticatedUser, setAuthenticatedUser] = React.useState<User>(null);
   React.useEffect(() => {
     const getCurrentUser = async () => {
       const users = await Auth.currentAuthenticatedUser();
-      const dbUsers = await DataStore.query(User, u =>u.sub('eq',users.attributes.sub));
+      const dbUsers = await DataStore.query(User, u =>
+        u.sub('eq', users.attributes.sub),
+      );
 
-      if (  dbUsers.length === 0) {
+      if (!dbUsers || dbUsers.length === 0) {
         return;
       }
 
@@ -25,15 +27,20 @@ const HomeScreen = () => {
     };
 
     getCurrentUser();
-  }, []);
+  }, [isUserLoading]);
 
   React.useEffect(() => {
+    if (isUserLoading || !authenticatedUser) {
+      return;
+    }
     const fetchUser = async () => {
-      const fetchedUser = await DataStore.query(User);
+      const fetchedUser = await DataStore.query(User, user =>
+        user.gender('eq', authenticatedUser.lookingFor),
+      );
       setUsers(fetchedUser);
     };
     fetchUser();
-  }, []);
+  }, [isUserLoading, authenticatedUser]);
 
   const onSwipeLeft = () => {
     if (!currentUser || !authenticatedUser) {
@@ -45,27 +52,28 @@ const HomeScreen = () => {
     if (!currentUser || !authenticatedUser) {
       return;
     }
-    const myMatches = await DataStore.query(Match,match =>(
-          match.User1ID('eq' ,authenticatedUser.id).User2ID('eq', currentUser.id)
-    ))
-      if(myMatches.length > 0) {
+    const myMatches = await DataStore.query(Match, match =>
+      match.User1ID('eq', authenticatedUser.id).User2ID('eq', currentUser.id),
+    );
+    if (myMatches.length > 0) {
+      console.log('You already swiped right to this user');
+      return;
+    }
+    const currentUserMatches = await DataStore.query(Match, match =>
+      match.User1ID('eq', currentUser.id).User2ID('eq', authenticatedUser.id),
+    );
 
-        console.log('You already swiped right to this user')
-        return;
-      }
-    const currentUserMatches = await DataStore.query(Match,match =>(
-      match.User1ID('eq' ,currentUser.id).User2ID('eq', authenticatedUser.id)
-))
-
-      if( currentUserMatches.length > 0) {
-        console.log('Yay, this is new Match');
-        const currentMatches = currentUserMatches[0];
-        DataStore.save(Match.copyOf(currentMatches,update => {
-            update.isMatch = true
-        }))
-        return;
-      }
-      console.warn('Sending him a match request !')
+    if (currentUserMatches.length > 0) {
+      console.log('Yay, this is new Match');
+      const currentMatches = currentUserMatches[0];
+      DataStore.save(
+        Match.copyOf(currentMatches, update => {
+          update.isMatch = true;
+        }),
+      );
+      return;
+    }
+    console.warn('Sending him a match request !');
 
     DataStore.save(
       new Match({
@@ -74,7 +82,6 @@ const HomeScreen = () => {
         isMatch: false,
       }),
     );
-    
   };
 
   return (
@@ -86,21 +93,21 @@ const HomeScreen = () => {
         onSwipeRight={onSwipeRight}
       />
       <View style={styles.icons}>
-        <View style={styles.button}>
+        <TouchableOpacity style={styles.button}>
           <FontAwesome name="undo" size={24} color="#FBD88B" />
-        </View>
-        <View style={styles.button}>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button}>
           <Entypo name="cross" size={24} color="#F76C6B" />
-        </View>
-        <View style={styles.button}>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button}>
           <FontAwesome name="star" size={24} color="#3AB4CC" />
-        </View>
-        <View style={styles.button}>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button}>
           <FontAwesome name="heart" size={24} color="#4FCC94" />
-        </View>
-        <View style={styles.button}>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button}>
           <Ionicons name="flash" size={24} color="#A65CD2" />
-        </View>
+        </TouchableOpacity>
       </View>
     </View>
   );

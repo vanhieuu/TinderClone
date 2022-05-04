@@ -9,9 +9,11 @@ const MatchesScreen = () => {
   const [me, setMe] = useState(null);
   const getCurrentUser = async () => {
     const users = await Auth.currentAuthenticatedUser();
-    const dbUsers = await DataStore.query(User, u => u.sub('eq',users.attributes.sub));
+    const dbUsers = await DataStore.query(User, u =>
+      u.sub('eq', users.attributes.sub),
+    );
 
-    if (dbUsers.length < 0) {
+    if (!dbUsers || dbUsers.length === 0) {
       return;
     }
 
@@ -21,7 +23,9 @@ const MatchesScreen = () => {
     getCurrentUser();
   }, []);
   useEffect(() => {
-    if (!me) return;
+    if (!me) {
+      return;
+    }
     const fetchMatches = async () => {
       const result = await DataStore.query(Match, m =>
         m
@@ -33,6 +37,25 @@ const MatchesScreen = () => {
     fetchMatches();
   }, [me]);
 
+  React.useEffect(() => {
+    const subscriptionFunc = async () => {
+      const subscription = await DataStore.observe(Match).subscribe(msg => {
+            if(msg.opType === 'UPDATE'){
+              const newMatch = msg.element;
+              if(newMatch.isMatch && (newMatch.User1ID === me.id || newMatch.User2ID === me.id)){
+                console.log('++++++++++++++++++++++++++');
+              }
+            }
+       
+      });
+      return () => {
+        subscription.unsubscribe();
+      };
+    };
+
+    subscriptionFunc();
+  }, [me]);
+
   return (
     <SafeAreaView style={styles.root}>
       <View style={styles.container}>
@@ -40,17 +63,17 @@ const MatchesScreen = () => {
           New Matches
         </Text>
         <View style={styles.users}>
-          {match.find(el => el.isMatch === true) ? (
-            match.map(user => (
-              <View key={user.id} style={styles.user}>
-                <Image source={{uri: user.User2.image}} style={styles.image} />
+          {match.map(user => {
+            const matchUsers =
+              user.User1.id === me.id ? user.User2 : user.User1;
+            return (
+              <View key={user.User2.id} style={styles.user}>
+                <Image source={{uri: matchUsers.image}} style={styles.image} />
+                <Text style={styles.name}>{matchUsers.name}</Text>
+                <Text style={styles.name}>{matchUsers.bio}</Text>
               </View>
-            ))
-          ) : (
-            <View>
-              <Text> Đi quẹt tiếp đi </Text>
-            </View>
-          )}
+            );
+          })}
         </View>
       </View>
     </SafeAreaView>
@@ -75,7 +98,6 @@ const styles = StyleSheet.create({
   user: {
     width: 90,
     height: 90,
-    flexDirection: 'row',
     margin: 10,
     borderWidth: 2,
     borderColor: '#f63a6e',
@@ -86,5 +108,12 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 50,
+  },
+  name: {
+    textAlign: 'center',
+    justifyContent: 'center',
+    // position:'absolute',
+    marginTop: 10,
+    fontWeight: 'bold',
   },
 });
