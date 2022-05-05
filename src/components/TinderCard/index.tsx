@@ -14,6 +14,7 @@ const TinderCard = ({items}: CardProps) => {
         <View style={styles.cardInner}>
           <Text style={styles.name}>{items.name}</Text>
           <Text style={styles.bio}>{items.bio}</Text>
+          <Text style={styles.bio}>{items.gender === 'MALE' ? 'Nam' : 'Nữ'}</Text>
         </View>
       </ImageBackground>
     </View>
@@ -50,13 +51,13 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 30,
     fontWeight: 'bold',
-    color: '#000',
+    color: '#f5f5f5',
     marginHorizontal: 10,
   },
   bio: {
     fontSize: 18,
     lineHeight: 25,
-    color: '#000',
+    color: '#f5f5f5',
     marginHorizontal: 10,
   },
   cardInner: {

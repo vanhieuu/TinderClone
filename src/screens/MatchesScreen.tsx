@@ -4,26 +4,28 @@ import React, {useState, useEffect} from 'react';
 import {Match, User} from '../models';
 import {Auth, DataStore} from 'aws-amplify';
 
-const MatchesScreen = () => {
+const MatchesScreen = ({isUserLoading}: {isUserLoading: boolean}) => {
   const [match, setMatch] = useState<Match[]>([]);
-  const [me, setMe] = useState(null);
+  const [me, setMe] = useState<User>();
+
   const getCurrentUser = async () => {
     const users = await Auth.currentAuthenticatedUser();
     const dbUsers = await DataStore.query(User, u =>
       u.sub('eq', users.attributes.sub),
     );
-
     if (!dbUsers || dbUsers.length === 0) {
       return;
     }
-
+    getCurrentUser();
+   
+    
     setMe(dbUsers[0]);
   };
+
+ 
+
   useEffect(() => {
-    getCurrentUser();
-  }, []);
-  useEffect(() => {
-    if (!me) {
+    if (isUserLoading || !me ||  match) {
       return;
     }
     const fetchMatches = async () => {
@@ -32,21 +34,24 @@ const MatchesScreen = () => {
           .isMatch('eq', true)
           .or(m => m.User1ID('eq', me.id).User2ID('eq', me.id)),
       );
+
       setMatch(result);
     };
     fetchMatches();
-  }, [me]);
+  }, [me, isUserLoading]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const subscriptionFunc = async () => {
       const subscription = await DataStore.observe(Match).subscribe(msg => {
-            if(msg.opType === 'UPDATE'){
-              const newMatch = msg.element;
-              if(newMatch.isMatch && (newMatch.User1ID === me.id || newMatch.User2ID === me.id)){
-                console.log('++++++++++++++++++++++++++');
-              }
-            }
-       
+        if (msg.opType === 'UPDATE') {
+          const newMatch = msg.element;
+          if (
+            newMatch.isMatch &&
+            (newMatch.User1ID === me.id || newMatch.User2ID === me.id)
+          ) {
+            console.log('++++++++++++++++++++++++++');
+          }
+        }
       });
       return () => {
         subscription.unsubscribe();
@@ -55,7 +60,7 @@ const MatchesScreen = () => {
 
     subscriptionFunc();
   }, [me]);
-
+  console.log(match);
   return (
     <SafeAreaView style={styles.root}>
       <View style={styles.container}>
@@ -71,6 +76,7 @@ const MatchesScreen = () => {
                 <Image source={{uri: matchUsers.image}} style={styles.image} />
                 <Text style={styles.name}>{matchUsers.name}</Text>
                 <Text style={styles.name}>{matchUsers.bio}</Text>
+                <Text style={styles.name}>{matchUsers.gender}</Text>
               </View>
             );
           })}

@@ -44,7 +44,7 @@ const App = () => {
       );
     }
     if (activeScreen === 'CHAT') {
-      return <MatchesScreen />;
+      return <MatchesScreen  isUserLoading={isUserLoading}  />;
     }
     if (activeScreen === 'PROFILE') {
       return <ProfileScreen />;

@@ -1,5 +1,5 @@
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
-import React from 'react';
+import React, {useEffect} from 'react';
 import AnimatedStack from '../components/AnimatedStack';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -10,6 +10,7 @@ import {Auth} from 'aws-amplify';
 
 const HomeScreen = ({isUserLoading}: {isUserLoading: boolean}) => {
   const [users, setUsers] = React.useState<User[]>([]);
+  const [matchesID, setMatchesID] = React.useState([]); //all users IDs of people who we already matches
   const [currentUser, setCurrentUser] = React.useState<User>(null);
   const [authenticatedUser, setAuthenticatedUser] = React.useState<User>(null);
   React.useEffect(() => {
@@ -29,18 +30,46 @@ const HomeScreen = ({isUserLoading}: {isUserLoading: boolean}) => {
     getCurrentUser();
   }, [isUserLoading]);
 
+  React.useEffect(() => {}, []);
+
+  useEffect(() => {
+    if (!authenticatedUser || isUserLoading || matchesID === null) {
+      return;
+    }
+    const fetchMatches = async () => {
+      const result = await DataStore.query(Match, m =>
+        m
+          .isMatch('eq', true)
+          .or(m1 =>
+            m1
+              .User1ID('eq', authenticatedUser.id)
+              .User2ID('eq', authenticatedUser.id),
+          ),
+      );
+      setMatchesID(
+        result.map(match => {
+          match.User1ID === authenticatedUser.id
+            ? match.User2ID
+            : match.User1ID;
+        }),
+      );
+    };
+    fetchMatches();
+  }, [authenticatedUser]);
+
   React.useEffect(() => {
-    if (isUserLoading || !authenticatedUser) {
+    if (isUserLoading || !authenticatedUser || matchesID === null) {
       return;
     }
     const fetchUser = async () => {
-      const fetchedUser = await DataStore.query(User, user =>
+      let fetchedUser = await DataStore.query(User, user =>
         user.gender('eq', authenticatedUser.lookingFor),
       );
+      fetchedUser = fetchedUser.filter(u => !matchesID.includes(u.id));
       setUsers(fetchedUser);
     };
     fetchUser();
-  }, [isUserLoading, authenticatedUser]);
+  }, [isUserLoading, authenticatedUser, matchesID]);
 
   const onSwipeLeft = () => {
     if (!currentUser || !authenticatedUser) {
@@ -56,7 +85,7 @@ const HomeScreen = ({isUserLoading}: {isUserLoading: boolean}) => {
       match.User1ID('eq', authenticatedUser.id).User2ID('eq', currentUser.id),
     );
     if (myMatches.length > 0) {
-      console.log('You already swiped right to this user');
+      console.warn('You already swiped right to this user');
       return;
     }
     const currentUserMatches = await DataStore.query(Match, match =>
@@ -64,7 +93,6 @@ const HomeScreen = ({isUserLoading}: {isUserLoading: boolean}) => {
     );
 
     if (currentUserMatches.length > 0) {
-      console.log('Yay, this is new Match');
       const currentMatches = currentUserMatches[0];
       DataStore.save(
         Match.copyOf(currentMatches, update => {
